@@ -10,8 +10,16 @@ public class Main {
 
     public static void main(String[] args) {
         long start = System.currentTimeMillis();
+
+        var id = 0;
+        var CREATE_USER_ID = 0;
+        long CREATE_USER_DATE = 0;
+        var url = "";
+
         List<Integer> ids = new ArrayList<>();
-        List<String> dates = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
+        List<Integer> CREATE_USER_IDs = new ArrayList<>();
+        List<Long> CREATE_USER_DATEs = new ArrayList<>();
 
         var connectionstring = "";
 
@@ -22,13 +30,16 @@ public class Main {
             e.printStackTrace();
         }
 
+        //content = id + "|" + url + "|" + CREATE_USER_ID + "|" + CREATE_USER_DATE + "\n";
         path = Paths.get("d:\\photos.txt");
         try {
             var list = Files.readAllLines(path);
             list.forEach(line -> {
                 String[] l = line.split("[|]");
                 ids.add(Integer.parseInt(l[0]));
-                dates.add(l[1]);
+                urls.add(l[1]);
+                CREATE_USER_IDs.add(Integer.parseInt(l[2]));
+                CREATE_USER_DATEs.add(Long.parseLong(l[2]));
             });
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -49,7 +60,7 @@ public class Main {
                 ps.setBinaryStream(1, in, (int) blob.length());
 
                 ps.setInt(2, ids.get(i));  // set the PK value
-                ps.setString(3, dates.get(i));
+                ps.setString(3, urls.get(i));
                 ps.executeUpdate();
                 con.commit();
 
