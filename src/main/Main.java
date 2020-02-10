@@ -8,6 +8,8 @@ import java.util.List;
 
 public class Main {
 
+    private static String userHome = System.getProperty("user.home");
+
     public static void main(String[] args) {
         long start = System.currentTimeMillis();
 
@@ -23,7 +25,7 @@ public class Main {
 
         var connectionstring = "";
 
-        var path = Paths.get("d:\\blob_conf2.txt");
+        var path = Paths.get(userHome + "/blob_conf2.txt");
         try {
             connectionstring = Files.readString(path);
         } catch (IOException e) {
@@ -31,7 +33,7 @@ public class Main {
         }
 
         //content = id + "|" + url + "|" + CREATE_USER_ID + "|" + CREATE_USER_DATE + "\n";
-        path = Paths.get("d:\\photos.txt");
+        path = Paths.get(userHome + "/photos.txt");
         try {
             var list = Files.readAllLines(path);
             list.forEach(line -> {
@@ -39,12 +41,12 @@ public class Main {
                 ids.add(Integer.parseInt(l[0]));
                 urls.add(l[1]);
                 CREATE_USER_IDs.add(Integer.parseInt(l[2]));
-                CREATE_USER_DATEs.add(Long.parseLong(l[2]));
+                CREATE_USER_DATEs.add(Long.parseLong(l[3]));
             });
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        System.out.println("d:\\photos.txt loaded, number of records: " + ids.size());
+        System.out.println(userHome + "/photos.txt loaded, number of records: " + ids.size());
 
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -53,14 +55,18 @@ public class Main {
 
             for (int i = 0; i < ids.size(); i++) {
                 PreparedStatement ps =
-                        con.prepareStatement("insert into BLOBTAB3 (blob_data,id,createdate) values (?,?,?)");
-                var blob = new File("D:\\photos\\" + ids.get(i));
+                        con.prepareStatement("insert into lksz.fotok (id,url,FOTO,CREATE_USER_ID,CREATE_USER_DATE) values (?,?,?,?,?)");
+
+                ps.setInt(1, ids.get(i));  // set the PK value
+                ps.setString(2, urls.get(i));
+                ps.setInt(4, CREATE_USER_IDs.get(i));
+                ps.setLong(5, CREATE_USER_DATEs.get(i));
+
+                var blob = new File(userHome + "/photos/" + urls.get(i));
                 var in = new FileInputStream(blob);
 
                 ps.setBinaryStream(1, in, (int) blob.length());
 
-                ps.setInt(2, ids.get(i));  // set the PK value
-                ps.setString(3, urls.get(i));
                 ps.executeUpdate();
                 con.commit();
 
@@ -72,6 +78,6 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Computation lasted " + (System.currentTimeMillis() - start) + " milliseconds.");
+        System.out.println("Computation lasted " + (System.currentTimeMillis() - start) / 1000 / 60 + " minutes.");
     }
 }
