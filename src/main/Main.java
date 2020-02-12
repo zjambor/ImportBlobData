@@ -55,14 +55,14 @@ public class Main {
 
             for (int i = 0; i < ids.size(); i++) {
                 PreparedStatement ps =
-                        con.prepareStatement("insert into jamborz.fotok (id,url,FOTO,CREATE_USER_ID,CREATE_USER_DATE) values (?,?,?,?,?)");
+                        con.prepareStatement("insert into lksz.fotok (id,url,FOTO,CREATE_USER_ID,CREATE_USER_DATE) values (?,?,?,?,?)");
 
                 ps.setInt(1, ids.get(i));  // set the PK value
                 ps.setString(2, urls.get(i));
                 ps.setInt(4, CREATE_USER_IDs.get(i));
                 ps.setLong(5, CREATE_USER_DATEs.get(i));
 
-                var blob = new File(userHome + "/photos/" + urls.get(i));
+                var blob = new File("/export/photos/" + urls.get(i));
                 var in = new FileInputStream(blob);
 
                 ps.setBinaryStream(3, in, (int) blob.length());
