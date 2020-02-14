@@ -10,7 +10,7 @@ public class Main {
 
     private static String userHome = System.getProperty("user.home");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
         long start = System.currentTimeMillis();
 
         var id = 0;
@@ -48,21 +48,22 @@ public class Main {
         }
         System.out.println(userHome + "/photos.txt loaded, number of records: " + ids.size());
 
-        try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-            Connection con = DriverManager.getConnection(connectionstring);
-            con.setAutoCommit(false);
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+        Connection con = DriverManager.getConnection(connectionstring);
+        con.setAutoCommit(false);
+        PreparedStatement ps = null;
+        int i = 0;
 
-            for (int i = 0; i < ids.size(); i++) {
-                PreparedStatement ps =
-                        con.prepareStatement("insert into lksz.fotok (id,url,FOTO,CREATE_USER_ID,CREATE_USER_DATE) values (?,?,?,?,?)");
+        try {
+            for (i = 0; i < ids.size(); i++) {
+                ps = con.prepareStatement("insert into lksz.fotok (id,url,FOTO,CREATE_USER_ID,CREATE_USER_DATE) values (?,?,?,?,?)");
 
                 ps.setInt(1, ids.get(i));  // set the PK value
                 ps.setString(2, urls.get(i));
                 ps.setInt(4, CREATE_USER_IDs.get(i));
                 ps.setLong(5, CREATE_USER_DATEs.get(i));
 
-                var blob = new File("/export/photos/" + urls.get(i));
+                var blob = new File("/export/" + urls.get(i));
                 var in = new FileInputStream(blob);
 
                 ps.setBinaryStream(3, in, (int) blob.length());
@@ -71,12 +72,15 @@ public class Main {
                 con.commit();
 
                 ps.close();
-                System.out.println("File inserted: " + blob.getName());
+                System.out.println(i + " | File inserted: " + blob.getName());
             }
 
             con.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            con.rollback();
+            ps.close();
+            System.out.println(urls.get(i) + " file inserting failed.");
         }
         System.out.println("Computation lasted " + (System.currentTimeMillis() - start) / 1000 / 60 + " minutes.");
     }
