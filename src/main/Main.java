@@ -63,16 +63,20 @@ public class Main {
                 ps.setInt(4, CREATE_USER_IDs.get(i));
                 ps.setLong(5, CREATE_USER_DATEs.get(i));
 
-                var blob = new File("/export/" + urls.get(i));
-                var in = new FileInputStream(blob);
+                try {
+                    var blob = new File("/export/exp/" + urls.get(i));
+                    var in = new FileInputStream(blob);
 
-                ps.setBinaryStream(3, in, (int) blob.length());
+                    ps.setBinaryStream(3, in, (int) blob.length());
+                    System.out.println(i + " | File inserted: " + blob.getName());
+                } catch (Exception e) {
+                    ps.setNull(3, Types.VARCHAR);
+                }
 
                 ps.executeUpdate();
                 con.commit();
 
                 ps.close();
-                System.out.println(i + " | File inserted: " + blob.getName());
             }
 
             con.close();
